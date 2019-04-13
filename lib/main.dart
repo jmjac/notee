@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import 'note.dart';
 
 void main() => runApp(MyApp());
@@ -36,7 +37,10 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (context, index) {
           return Dismissible(
             key: Key(notes[index].id.toString()),
-            onDismissed: (direction) {
+            confirmDismiss: (DismissDirection dismissDirection) {
+              return _confirmDelete();
+            }            ,
+            onDismissed: (DismissDirection dismissDirection) {
               setState(() {
                 notes.removeAt(index);
               });
@@ -44,7 +48,7 @@ class _HomePageState extends State<HomePage> {
                   .showSnackBar(SnackBar(content: Text("Note deleted")));
             },
             child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
+                behavior: HitTestBehavior.translucent,
                 child: Column(children: [
                   Padding(
                       padding: EdgeInsets.only(top: 8.0),
@@ -76,13 +80,38 @@ class _HomePageState extends State<HomePage> {
         itemCount: notes.length);
   }
 
+  Future<bool> _confirmDelete() {
+    return showDialog<bool>(context: context, builder: (BuildContext context) {
+      return AlertDialog(
+          title: Text('Delete?'),
+          content: const Text(
+              'Do you want to delete this note?'),
+          actions: <Widget>[
+            FlatButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            FlatButton(
+              child: const Text('ACCEPT'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            )
+            ,
+          ]);
+    }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
         title: Text("Notee"),
-        actions: [IconButton(icon: Icon(Icons.settings))],
+        actions: [IconButton(icon: Icon(Icons.settings), onPressed: (){},)],
       ),
       body: Center(child: _buildNotes()),
       floatingActionButton: FloatingActionButton(
@@ -98,6 +127,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
 
 class NoteDetails extends StatelessWidget {
   // Details of each note. Appears after onTap from ListView.builder from _buildNotes()
@@ -115,7 +145,7 @@ class NoteDetails extends StatelessWidget {
           style: TextStyle(color: Colors.pink),
         ),
       ),
-      body: SingleChildScrollView(child:Text(note.description)),
+      body: SingleChildScrollView(child: Text(note.description)),
     );
   }
 }
@@ -123,17 +153,20 @@ class NoteDetails extends StatelessWidget {
 class AddNotePage extends StatefulWidget {
 
   final List<Note> notes;
+
   AddNotePage({Key key, @required this.notes}) : super(key: key);
+
   @override
   _AddNotePageState createState() => _AddNotePageState(notes: notes);
 
 
 }
 
-class _AddNotePageState extends State<AddNotePage>{
+class _AddNotePageState extends State<AddNotePage> {
   // Class for adding new notes to the notepad
   //TODO: Save data, and transfer it between stages
   final List<Note> notes;
+
   _AddNotePageState({Key key, @required this.notes});
 
   final titleController = TextEditingController();
