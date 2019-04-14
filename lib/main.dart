@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:notee/settings.dart';
 import 'dart:async';
 import 'note.dart';
 
@@ -25,7 +27,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  //TODO: Open notes details
   static var x = Note("Todo: Finish this app", "TODO");
   static var y = Note(
       "Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!",
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> {
             key: Key(notes[index].id.toString()),
             confirmDismiss: (DismissDirection dismissDirection) {
               return _confirmDelete();
-            }            ,
+            },
             onDismissed: (DismissDirection dismissDirection) {
               setState(() {
                 notes.removeAt(index);
@@ -81,28 +82,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> _confirmDelete() {
-    return showDialog<bool>(context: context, builder: (BuildContext context) {
-      return AlertDialog(
-          title: Text('Delete?'),
-          content: const Text(
-              'Do you want to delete this note?'),
-          actions: <Widget>[
-            FlatButton(
-              child: const Text('CANCEL'),
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-            ),
-            FlatButton(
-              child: const Text('ACCEPT'),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-            )
-            ,
-          ]);
-    }
-    );
+    // Confirm dialog used in _buildNotes confirmDismiss
+    return showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Text('Delete?'),
+              content: const Text('Do you want to delete this note?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: const Text('CANCEL'),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                ),
+                FlatButton(
+                  child: const Text('ACCEPT'),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ]);
+        });
   }
 
   @override
@@ -111,7 +112,13 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         elevation: 1,
         title: Text("Notee"),
-        actions: [IconButton(icon: Icon(Icons.settings), onPressed: (){},)],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings),
+            //TODO: Add custom animation
+            onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));},
+          )
+        ],
       ),
       body: Center(child: _buildNotes()),
       floatingActionButton: FloatingActionButton(
@@ -127,7 +134,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
 
 class NoteDetails extends StatelessWidget {
   // Details of each note. Appears after onTap from ListView.builder from _buildNotes()
@@ -151,15 +157,12 @@ class NoteDetails extends StatelessWidget {
 }
 
 class AddNotePage extends StatefulWidget {
-
   final List<Note> notes;
 
   AddNotePage({Key key, @required this.notes}) : super(key: key);
 
   @override
   _AddNotePageState createState() => _AddNotePageState(notes: notes);
-
-
 }
 
 class _AddNotePageState extends State<AddNotePage> {
@@ -171,7 +174,6 @@ class _AddNotePageState extends State<AddNotePage> {
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
-
 
   @override
   Widget build(BuildContext context) {
