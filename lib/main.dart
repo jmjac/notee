@@ -2,13 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'dart:async';
+import 'package:sqflite/sqflite.dart';
+
 import 'package:notee/SettingsPage.dart';
 import 'package:notee/NoteDetailsPage.dart';
 import 'package:notee/AddNotePage.dart';
-
-import 'dart:async';
+import 'package:notee/DatabaseHelper.dart';
 import 'Note.dart';
-
 
 void main() => runApp(MyApp());
 
@@ -32,11 +33,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static var x = Note("Todo: Finish this app", "TODO");
-  static var y = Note(
-      "Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!, Go for a walk with my friends. I'm not really sure what to do but I would like to try ou this new app!",
-      "Plans for tomorrow"); //For development UI testing
-  static List<Note> notes = [x, y];
+  List<Note> notes = [];
 
   Widget _buildNotes() {
     return ListView.builder(
@@ -47,6 +44,7 @@ class _HomePageState extends State<HomePage> {
               return _confirmDelete();
             },
             onDismissed: (DismissDirection dismissDirection) {
+              deleteNote(notes[index].id);
               setState(() {
                 notes.removeAt(index);
               });
@@ -121,11 +119,35 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.settings),
             //TODO: Add custom animation
-            onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));},
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()));
+            },
           )
         ],
       ),
-      body: Center(child: _buildNotes()),
+      body: Center(
+          child: FutureBuilder(
+              future: getNotes(notes),
+              builder: (context, snapshot) {
+                if (notes.isEmpty) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Text("Loading");
+                    case ConnectionState.active:
+                      return Text("Loading");
+                    default:
+                      if (snapshot.hasError) {
+                        return Text("${snapshot.error}");
+                      } else {
+                        return _buildNotes();
+                      }
+                  }
+                } else {
+                  // Prevents UI changing to "Loading" when notes are already loaded.
+                  return _buildNotes();
+                }
+              })),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         elevation: 10,
@@ -140,4 +162,19 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+getNotes(List<Note> notes) async {
+  if (notes.isEmpty) {
+    Database db = await DatabaseHelper.instance.database;
+    for (var row in await db.query(DatabaseHelper.table)) {
+      notes.add(Note.fromDatabase(row));
+    }
+  } else {
+    print("Already loaded");
+  }
+}
 
+deleteNote(int id) async {
+  Database db = await DatabaseHelper.instance.database;
+  db.delete(DatabaseHelper.table,
+      where: "${DatabaseHelper.columnId} = ?", whereArgs: [id]);
+}

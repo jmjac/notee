@@ -1,12 +1,18 @@
+
 class Note{
   String description;
   String title = "";
-  DateTime date;
+  String date;
   int id;
 
-  Note(this.description,  [this.title]){
-    this.date = DateTime.now();
-    this.id = (this.description+this.title+this.date.toString()).hashCode;
+  Note(this.description,  this.title, this.id){
+    this.date = DateTime.now().toString();
   }
 
+  Note.fromDatabase(var row){
+    this.description = row["description"];
+    this.title = row['title'];
+    this.date = row["date"];
+    this.id = row["_id"];
+  }
 }

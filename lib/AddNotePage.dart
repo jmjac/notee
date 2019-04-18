@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'Note.dart';
+import 'DatabaseHelper.dart';
+import 'package:sqflite/sqflite.dart';
+
+
 
 class AddNotePage extends StatefulWidget {
   final List<Note> notes;
@@ -15,7 +19,6 @@ class _AddNotePageState extends State<AddNotePage> {
   // Class for adding new notes to the notepad
   //TODO: Save data, and transfer it between stages
   final List<Note> notes;
-
   _AddNotePageState({Key key, @required this.notes});
 
   final titleController = TextEditingController();
@@ -51,11 +54,27 @@ class _AddNotePageState extends State<AddNotePage> {
       floatingActionButton: FlatButton(
         child: Text("Submit", style: TextStyle(color: Colors.pink)),
         onPressed: () {
-          notes.add(Note(descriptionController.text, titleController.text));
+          saveNote(descriptionController.text, titleController.text, notes);
           Navigator.popUntil(
               context, ModalRoute.withName('/')); //Return to HomePage
         },
       ),
     );
   }
+}
+
+
+
+saveNote(String description, String title, notes) async{
+  // saving new note to database
+  Database db = await DatabaseHelper.instance.database;
+  Map<String, dynamic> row = {
+    DatabaseHelper.columnDescription : description,
+    DatabaseHelper.columnTitle : title,
+    DatabaseHelper.columnDate : DateTime.now().toString()
+  };
+
+  int id = await db.insert(DatabaseHelper.table, row);
+
+ notes.add(Note(description, title, id));
 }
