@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => NoteDetails(note: notes[index])),
+                        builder: (context) => NoteDetailsPage(note: notes[index])),
                   );
                 }),
             background: Container(
