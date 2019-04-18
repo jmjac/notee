@@ -17,7 +17,6 @@ class AddNotePage extends StatefulWidget {
 
 class _AddNotePageState extends State<AddNotePage> {
   // Class for adding new notes to the notepad
-  //TODO: Save data, and transfer it between stages
   final List<Note> notes;
   _AddNotePageState({Key key, @required this.notes});
 
