@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
                 notes.removeAt(index);
               });
               Scaffold.of(context)
-                  .showSnackBar(SnackBar(content: Text("Note deleted")));
+                  .showSnackBar(SnackBar(content: Text("Note deleted"),duration: Duration(seconds: 1)));
             },
             child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
@@ -71,7 +71,8 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => NoteDetailsPage(note: notes[index])),
+                        builder: (context) =>
+                            NoteDetailsPage(note: notes[index])),
                   );
                 }),
             background: Container(
@@ -131,6 +132,7 @@ class _HomePageState extends State<HomePage> {
               future: getNotes(notes),
               builder: (context, snapshot) {
                 if (notes.isEmpty) {
+                  // Prevents UI changing to "Loading" when notes are already loaded.
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
                       return Text("Loading");
@@ -144,7 +146,6 @@ class _HomePageState extends State<HomePage> {
                       }
                   }
                 } else {
-                  // Prevents UI changing to "Loading" when notes are already loaded.
                   return _buildNotes();
                 }
               })),
@@ -163,13 +164,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 getNotes(List<Note> notes) async {
-  if (notes.isEmpty) {
-    Database db = await DatabaseHelper.instance.database;
-    for (var row in await db.query(DatabaseHelper.table)) {
-      notes.add(Note.fromDatabase(row));
-    }
-  } else {
-    print("Already loaded");
+  notes = [];
+  Database db = await DatabaseHelper.instance.database;
+  for (var row in await db.query(DatabaseHelper.table)) {
+    notes.add(Note.fromDatabase(row));
   }
 }
 
